@@ -190,6 +190,25 @@ module TTY
         end
       end
 
+      # sort of working, but just keeps overwriting the top bar
+      def log(message)
+        sanitized_message = message.gsub(/\r|\n/, " ")
+        sanitized_message = "#{sanitized_message}#{NEWLINE}" if done?
+        top_bar.write(sanitized_message)
+      end
+
+      # Outputs as expecte, but the bars keep writing to the same line
+      def log(message)
+        @output.print("#{ECMA_CSI}0m#{TTY::Cursor.clear_line}")
+        @output.print(message)
+        @output.print(TTY::ProgressBar::NEWLINE)
+        @output.print TTY::Cursor.next_line
+
+        # Reposition the bars - but then the logs get overwritten?
+        #@bars.reverse.each_with_index { |b, i| b.instance_variable_set(:@row, @rows - i + 1) }
+        next_row
+      end
+
       # Check if all bars are paused
       #
       # @return [Boolean]
